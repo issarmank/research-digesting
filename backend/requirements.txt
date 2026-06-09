@@ -1,0 +1,27 @@
+# Agent framework
+crewai
+crewai-tools
+
+# LLM backend
+groq
+litellm
+
+# Search & scraping
+tavily-python
+feedparser
+
+# Email delivery
+resend
+jinja2
+
+# Scheduling
+apscheduler
+
+# Frontend
+streamlit
+streamlit-extras
+
+# Config & secrets
+python-dotenv
+pydantic
+loguru
