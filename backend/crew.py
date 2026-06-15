@@ -1,9 +1,11 @@
+import os
 import time
 
 from crewai import Crew, Process
 from agents.scout import create_scout, search_topic
 from agents.curator import deduplicate
 from agents.writer import create_writer, Digest
+from agents.dispatcher import send_digest_email
 from tasks.tasks import create_scout_task, create_writer_task
 from config import TOPICS
 
@@ -94,6 +96,11 @@ def run():
             print(writer_result)
         else:
             _print_digest(digest)
+            to_email = os.getenv("TO_EMAIL", "")
+            if to_email:
+                print(f"\nSending digest to {to_email}...")
+                result = send_digest_email(digest, to_email)
+                print(f"Email sent. id={result['id']}")
 
 
 if __name__ == "__main__":

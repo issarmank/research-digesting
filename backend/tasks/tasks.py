@@ -71,3 +71,14 @@ ARTICLES TO EVALUATE:
         agent=writer,
         output_pydantic=Digest,
     )
+
+
+def create_dispatcher_task(dispatcher: Agent, digest: Digest) -> Task:
+    return Task(
+        description=(
+            f"Send the research digest for '{digest.topic}' as a formatted HTML email. "
+            f"Use the Send Digest Email tool with this JSON:\n\n{digest.model_dump_json()}"
+        ),
+        expected_output="A confirmation string containing the Resend email delivery id.",
+        agent=dispatcher,
+    )
