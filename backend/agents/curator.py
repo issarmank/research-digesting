@@ -1,3 +1,4 @@
+import json
 import re
 import sqlite3
 from datetime import datetime, timezone
@@ -12,6 +13,14 @@ def _init_db(conn: sqlite3.Connection) -> None:
             url        TEXT PRIMARY KEY,
             topic      TEXT,
             first_seen TIMESTAMP
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS digests (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            topic       TEXT,
+            run_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            digest_json TEXT
         )
     """)
     conn.commit()
@@ -29,6 +38,26 @@ def _is_new_url(conn: sqlite3.Connection, url: str, topic: str) -> bool:
     )
     conn.commit()
     return True
+
+
+def save_digest(digest, topic: str) -> None:
+    with sqlite3.connect(_DB_PATH) as conn:
+        _init_db(conn)
+        conn.execute(
+            "INSERT INTO digests (topic, run_at, digest_json) VALUES (?, ?, ?)",
+            (topic, datetime.now(timezone.utc).isoformat(), json.dumps(digest.model_dump())),
+        )
+        conn.commit()
+
+
+def list_digests(limit: int = 20) -> list[dict]:
+    with sqlite3.connect(_DB_PATH) as conn:
+        _init_db(conn)
+        rows = conn.execute(
+            "SELECT id, topic, run_at, digest_json FROM digests ORDER BY run_at DESC LIMIT ?",
+            (limit,),
+        ).fetchall()
+    return [{"id": r[0], "topic": r[1], "run_at": r[2], "digest_json": r[3]} for r in rows]
 
 
 def deduplicate(scout_output: str, topic: str) -> list[dict]:
